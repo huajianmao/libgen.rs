@@ -136,13 +136,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for (i, book) in books.iter().enumerate() {
         println!("[{}]\t{}\t{}[.{}]", i + 1, book.id, book.title, book.extension);
     }
-    println!("Input the number to download: ");
 
-    let mut line = String::new();
-    let _ = std::io::stdin().read_line(&mut line);
-    let number: usize = std::str::FromStr::from_str(&line.trim()).unwrap_or(0);
-
+    let number: usize;
+    if args.len() < 3 {
+        println!("Input the number to download: ");
+        let mut line = String::new();
+        let _ = std::io::stdin().read_line(&mut line);
+        number = std::str::FromStr::from_str(&line.trim()).unwrap_or(0);
+    } else {
+        number = std::str::FromStr::from_str(&args[2].trim()).unwrap_or(0);
+    }
     println!("The input is {}", number);
+
     if number >= books.len() + 1 || number <= 0 {
         println!("The number should be larger than 0 and less than {}", books.len());
     } else {
@@ -150,7 +155,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("Going to download [{}] {}", number, book.title);
         let _ = libgen.load_file_urls(book);
         println!("{:#?}", book.files);
-
+        println!("Downloading file from {:#?}", book.files[book.files.len() - 1]);
         let content = libgen.client.get(&book.files[book.files.len() - 1]).send().unwrap().bytes().unwrap();
         let mut file = File::create(format!("{}.{}", book.title, book.extension)).unwrap();
         file.write_all(&content).expect("write failed");
