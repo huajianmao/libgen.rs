@@ -1,4 +1,6 @@
 use scraper::{Html, Selector};
+use std::io::Write;
+use std::fs::File;
 
 struct Book {
     id: String,
@@ -148,6 +150,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("Going to download [{}] {}", number, book.title);
         let _ = libgen.load_file_urls(book);
         println!("{:#?}", book.files);
+
+        let content = libgen.client.get(&book.files[book.files.len() - 1]).send().unwrap().bytes().unwrap();
+        let mut file = File::create(format!("{}.{}", book.title, book.extension)).unwrap();
+        file.write_all(&content).expect("write failed");
     }
 
     Ok(())
